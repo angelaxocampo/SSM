@@ -1,30 +1,32 @@
 ---
-title: 'Lab 1: Introduction to R, RStudio, RMarkdown, Data, Variables and Data Viz'
+title: "R Studio, R Mardown, Data and Data Viz"
 author: "Professor Ocampo"
-date: "January 24, 2024"
+date: "`r Sys.Date()`"
 output: 
-  html_document:
-    highlight: haddock
+  html_document: 
+    toc: true
     theme: cosmo
-editor_options: 
-  chunk_output_type: console
 ---
+# Introduction
 
 Now that you have successfully downloaded R and R Studio, and have a few classes under your belt, you are ready to begin practicing some of the skills and tools we are learning. 
 
 # R and RStudio
 
-Let's first discuss R and the RStudio window. 
+Let’s first discuss R and the RStudio window.
 
+The pane in the upper left contains your **source** or workspace. This is where you will be typing your lab and  R code. It it also where your R script lives. 
+ 
+Any plots that you generate will show up in the pane in the lower right corner. This is called the **output** pane.
 
-The panel in the upper left contains your *workspace* as well as a history of the commands that you've previously entered.  Any plots that you generate will show up in the panel in the lower right corner.
+The panel on the upper left corner is where the action happens. It is called the console. Every time you launch RStudio, it will have the same text at the top of the console telling you the version of R that you’re running. Below that information is the prompt. As its name suggests, this prompt is really a request, a request for a command. Initially, interacting with R is all about typing commands and interpreting the output. These commands and their syntax have evolved over decades (literally) and now provide what many users feel is a fairly natural way to access data and organize, describe, and invoke statistical computations.
 
-The panel on the right is where the action happens.  It's called the *console*. Every time you launch RStudio, it will have the same text at the top of the  console telling you the version of R that you're running.  Below that  information is the *prompt*.  As its name suggests, this prompt is really a  request, a request for a command.  Initially, interacting with R is all about 
-typing commands and interpreting the output. These commands and their syntax  have evolved over decades (literally) and now provide what many users feel is a  fairly natural way to access data and organize, describe, and invoke statistical computations.
+The **environment** pane is located at the bottom left and this is where your current saved R objects live.
 
-The placement of the panels might look different for you. This is okay. You can change the placement of the *workspace*, *console*, *output* and *environment* panels. 
+The placement of the panes might look different for you. This is okay. You can change the placement of the source, console, output and environment panes. You can modify the placement of these by going to **Tools** > **Global Options** > **pane Layout.**
 
-You can use R as a calculator. To get you started, enter the following command at the R prompt (i.e. right after `>` on the console).  You can either type it in manually or copy and paste it from this document.
+You can use R as a calculator. To get you started, enter the following command at the R prompt (i.e. right after > on the console). You can either type it in manually or copy and paste it from this document.
+
 
 ```{r}
 2+3
@@ -87,7 +89,7 @@ We are going to begin by learning how to load data, deal with packages and other
 
 This is how you load the data
 
-```{r load, echo=FALSE}
+```{r load, echo=TRUE}
 load(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.rda"))
 
 ```
@@ -96,6 +98,13 @@ The data that you have loaded is now in your environment. You can now take a loo
 
 To look at the many variables that exist in the data set, you can type:
 
-```{r names, echo=FALSE}
+```{r, echo=FALSE}
 names(LNS)
+
 ```
+
+
+# Sources
+
+- Garcia-Rios. Puzzle Solving with Data <https://garciarios.github.io/govt_3990/index.html>
+- R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
