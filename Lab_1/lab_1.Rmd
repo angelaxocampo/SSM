@@ -1,11 +1,13 @@
 ---
 title: "R Studio, R Markdown, Data and Data Viz"
 author: "Professor Ocampo"
-date: "`r Sys.Date()`"
+date: "January 24, 2024"
 output: 
   html_document: 
     toc: true
     theme: cosmo
+editor_options: 
+  chunk_output_type: console
 ---
 # Introduction
 
@@ -61,9 +63,10 @@ summary(cars)
 
 ```
 
-Your R code should start with ````{r}` and should end with ```` 
-
-## Including Plots
+Your R code should start with 
+```{r, eval=FALSE} 
+``` {r} and should end with ```   
+```
 
 You can also embed plots, or images for example:
 
@@ -73,14 +76,14 @@ plot(pressure)
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot. However, if you want to include that into your file, you can set it to be `echo = TRUE` and it will print the R code when you **Knit** the document.
 
-For your labs, make sure that you are printing only relevant R code and output in your R Markdown file. Another useful parameter to set as either TRUE or FALSE will be `eval =`. Set `eval=TRUE` if you want to evaluate the code and include its results in the document. Set `eval=FALSE` if you do not want the results to show in the document.
+For your labs, make sure that you are printing **only** relevant R code and output in your R Markdown file. Another useful parameter to set as either TRUE or FALSE will be `eval =`. Set `eval=TRUE` if you want to evaluate the code and include its results in the document. Set `eval=FALSE` if you do not want the results to show in the document.
 
 ## Creating a Reproducible Lab Report
 
 We will be using R Markdown, to type up the lab reports. This allows you to complete your labs entirely in RStudio as well as ensuring reproducibility of your R analysis and results. To help get you started, I am providing a template for you. Use the following code to download this template:
 
 ```{r load-template}
-download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/lab1.Rmd", destfile = "lab1.Rmd")
+#download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/lab1.Rmd", destfile = "lab1.Rmd")
 ```
 
 # Set Working Directory
@@ -111,8 +114,7 @@ library(haven)
 We now have all the tools to load the LNS dataset. To load the data, you can run the following code, which uses the `read_dta` command to read the file. This file in .dta (Stata) format, but we can read it into R. In fact, we can read all sorts of data files into R including: SPSS, Stata, Rdata, CSV and so much more :)
 
 ```{r load, echo=TRUE}
-#read_dta(url(""))
-
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
 ```
 
 This data is in .dta (Stata) format. But we have used the haven package to read the data into R.
@@ -126,8 +128,47 @@ names(LNS)
 
 ```
 
-Because there are so many variables, we will have to work with the codebook to identify key and relevant variables for our research. This is of course after have 
+Because there are so many variables, we will have to work with the codebook to identify key and relevant variables for our research. This is of course after have we have identified  our research question, hypotheses and the relevant variables we might want to examine. But because we are practicing our skills here, we will just start by summarizing our data and visualizing.
 
+A codebook provides information about the structure, contents and layout of a data file. You should always review a codebook before downloading data or starting to work on data analysis. You can download the codebook for the LNS from here:
+
+```{r}
+#download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Codebook/Codebook.pdf", destfile = "LNS_Codebook.pdf")
+```
+
+
+# Organizing and Summarizing Data
+
+Let's see we are first interested in understanding where Latinos who were surveyed live. Looking at the codebook, we learn that the variable called `RSTATE` represents the state of residency of respondents. To get a sense of the distribution we can run the following code.
+
+```{r}
+LNS %>% 
+  count(RSTATE) 
+```
+The code is telling R to look within the LNS data frame and count the observations by the variable called `RSTATE`. We use the ` %>% ` symbol, also called a pipe. It runs from the magrittr package. It basically tells R to take the output from one function and feed it into the argument from another.  In this case, it tells R to take the LNS data and count the unique values of the variable. We will be using ` %>% ` so it is important that you start familiarizing yourself with it.
+
+Okay, now we have created a frequency distribution for state of residency among our respondents. Looking at the frequency table this way, allows us to get a better sense of the data an summarize the information from those 8,634 people that answered the survey. We learn quite a lot. We see that only 62 respondents live in D.C. but 811 respondents live in TX. 
+
+```{r}
+LNS %>% 
+  count(RSTATE) %>% 
+  mutate(pct = prop.table(n) * 100 )
+```
+
+
+# Visualizing Data
+
+
+```{r}
+ggplot(LNS, aes(RSTATE)) +
+  geom_bar()
+```
+
+
+```{r}
+ggplot(LNS, aes(x=AGE)) +
+  geom_histogram(binwidth = 2)
+```
 
 
 # Sources
