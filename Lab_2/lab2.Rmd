@@ -1,0 +1,165 @@
+---
+title: "Lab 2 - Data Recodes, Measures of Central Tendency and Variability"
+author: "Name here"
+date: "Date of lab session"
+output: 
+  html_document: 
+    fig_height: 4
+    theme: simplex
+    highlight: haddock
+---
+
+
+# Lab report
+
+
+```{r}
+install.packages("forecats")
+```
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+```{r load, echo=TRUE}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+```
+
+
+```{r}
+LNS %>%
+  select(AGE) %>%
+  summary()
+```
+
+
+
+```{r}
+51-28
+```
+
+
+```{r}
+ggplot(LNS, aes(y = AGE)) + 
+    geom_boxplot(outlier.colour="black", 
+                 na.rm=T)
+```
+
+
+```{r}
+ LNS %>%
+  summarise(median_age = median(AGE, na.rm=T),
+            mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T),
+            median_arrive = median(ARRIVEUS, na.rm=T),
+            mean_arrive = mean(ARRIVEUS, na.rm=T), 
+            sd_arrive = sd(ARRIVEUS, na.rm=T))
+```
+
+
+
+```{r}
+ LNS %>%
+  group_by(SEX) %>% 
+  summarise(mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T), 
+            mean_arrive = mean(ARRIVEUS, na.rm=T), 
+            sd_arrive = sd(ARRIVEUS, na.rm=T))
+```
+
+
+```{r}
+ggplot(LNS, aes(x=SEX, y = AGE, fill=SEX)) + 
+    geom_boxplot(outlier.colour="black", 
+                 na.rm=T)
+```
+
+
+```{r}
+ LNS %>%
+  group_by(BORNUS) %>% 
+  summarise(median_age= median(AGE,na.rm=T),
+            mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T)) 
+```
+
+
+
+``` {r}
+LNS %>% 
+  count(RSTATE) %>%
+    mutate(pct = prop.table(n) * 100) %>% 
+    arrange(desc(pct))
+```
+
+
+```{r}
+LNS %>% 
+  count(PARTYID) %>%
+  mutate(pct = prop.table(n) * 100) 
+
+ggplot(LNS, aes(PARTYID)) +
+  geom_bar()
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(PARTYID_N = 
+           case_when(PARTYID == 1 ~ "Democrat",
+                     PARTYID == 2 ~ "Republican",
+                     PARTYID == 3 ~ "Independent",
+                     PARTYID == 4 ~ "Don't care",
+                     PARTYID == 5 ~ "Don't know/other party"),
+         PARTYID_N = factor(PARTYID_N, levels = c("Democrat", "Republican","Independent", 
+                                              "Don't care", "Don't know/other party")))
+```
+
+
+```{r}
+ggplot(LNS, aes(PARTYID_N)) +
+  geom_bar()
+```
+
+```{r}
+LNS %>% 
+  count(PARTYID_N) %>%
+  mutate(pct = prop.table(n) * 100) %>% 
+  ggplot(aes(x = PARTYID_N, y = pct)) + 
+    geom_col() +
+  xlab("Partisanship") + ylab("Percentage")
+```
+
+* * *
+
+### On your own:
+
+#### 1:
+
+
+
+```{r oyo1}
+
+```
+
+#### 2:
+
+
+
+```{r oyo2}
+
+```
+
+#### 3:
+
+
+
+```{r oyo3}
+
+```
+
+
+
+* * *
