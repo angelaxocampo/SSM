@@ -1,0 +1,201 @@
+---
+title: "Lab 3 - Estimation and Confidence Intervals"
+author: "Your name"
+date: "date"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+
+# Lab report
+
+```{r, eval=F}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_3/lab3.Rmd", destfile = "lab3.Rmd")
+```
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+
+```{r load, echo=TRUE}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+```
+
+
+
+```{r}
+LNS %>% 
+  count(PARBORN) %>% 
+  mutate(pct = prop.table(n) * 100)
+```
+
+
+```{r}
+LNS %>% 
+  count(PARBORN) %>% 
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARBORN, y = pct)) + 
+    geom_col() +
+  xlab("Parents birth place") + ylab("Percentage") +
+  theme(axis.text.x = element_text(angle=45, vjust = .5))
+```
+
+```{r}
+LNS %>% 
+  count(GRANBORN) %>% 
+  mutate(pct = prop.table(n) * 100) %>% 
+  ggplot(aes(x = GRANBORN, y = pct)) + 
+    geom_col() +
+  xlab("Grandparents birth place") + ylab("Percentage")+
+  theme(axis.text.x = element_text(angle=45, vjust = .5))
+
+```
+
+
+```{r}
+LNS <- LNS %>%  
+  mutate(PARENTS_BIRTHPLC = 
+           case_when(PARBORN == 1 ~ "One parent born in the U.S.",
+                     PARBORN == 2 ~ "Both parents born in the U.S.",
+                     PARBORN == 3 ~ "Neither parent born in the U.S.",
+                     PARBORN == 4 ~ "DK/Refused",
+                     PARBORN == 5 ~ "DK/Refused"),
+         PARENTS_BIRTHPLC = factor(PARENTS_BIRTHPLC, 
+                            levels =  c("One parent born in the U.S.", 
+                                        "Both parents born in the U.S.",
+                                        "Neither parent born in the U.S.",
+                                        "DK/Refused")))
+```
+
+
+```{r}
+LNS %>% 
+  count(PARENTS_BIRTHPLC) %>%
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARENTS_BIRTHPLC, y = pct)) + 
+    geom_col() +
+  xlab("Parents birth place") + ylab("Percentage")
+  
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+```
+
+
+```{r}
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(PARENTS_BIRTHPLC) %>%
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARENTS_BIRTHPLC, y = pct, fill=GENDER)) + 
+    geom_col(position = "dodge") +
+  xlab("Parents birth place") + ylab("Percentage")
+```
+
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GENERATION = 
+         case_when(BORNUS == 1 & PARBORN == 1 ~ "Second",
+                   BORNUS == 1 & PARBORN == 2 ~ "Third +",
+                   BORNUS == 1 & PARBORN == 3 ~ "Second",
+                   BORNUS == 1 & PARBORN == 4 ~ "NA",
+                   BORNUS == 1 & PARBORN == 5 ~ "NA",
+                   BORNUS == 2 & PARBORN == 1 ~ "Second",
+                   BORNUS == 2 & PARBORN == 2 ~ "Third +",
+                   BORNUS == 2 & PARBORN == 3 ~ "Second",
+                   BORNUS == 2 & PARBORN == 4 ~ "Second",
+                   BORNUS == 2 & PARBORN == 5 ~ "Second",
+                   BORNUS == 3 ~ "First"),
+         GENERATION = factor(GENERATION,
+                             levels = c("First", "Second", "Third +", "NA")))
+```
+
+
+```{r}
+LNS %>% 
+  count(GENERATION) %>%
+  mutate(pct = prop.table(n) * 100)
+```
+
+
+```{r}
+first.gen  <- LNS  %>%
+  filter(GENERATION == "First")
+```
+
+
+```{r}
+first.gen %>% 
+  filter(AGE < 35) %>% 
+  group_by(GENDER) %>% 
+  count()
+```
+
+
+```{r}
+LNS %>% 
+  count(BIGINTST) %>% 
+   mutate(p = prop.table(n) * 100)
+```
+
+```{r}
+LNS %>% 
+  count(BIGINTST) %>% 
+  mutate(p = prop.table(n) * 100)
+```
+
+
+```{r}
+s.e. = sqrt(.371*(1-.371)/8634)
+
+lower_co  = .371 - 1.96 * s.e.
+upper_co =  .371 + 1.96 * s.e.
+
+lower_co
+
+upper_co
+```
+
+#### On your own:
+
+#### 1:
+
+
+
+```{r oyo1}
+
+```
+
+#### 2:
+
+
+
+```{r oyo2}
+
+```
+
+#### 3:
+
+
+
+```{r oyo3}
+
+```
+
+
+
+* * *
