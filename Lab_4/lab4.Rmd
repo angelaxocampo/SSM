@@ -1,0 +1,189 @@
+---
+title: "Lab 4 - Hypothesis Testing and Bivariate Analysis"
+author: "Your name"
+date: "date"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_4/lab4.Rmd", destfile = "lab4.Rmd")
+```
+
+
+```{r, include=FALSE}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+```{r load, echo=TRUE, include = FALSE}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(US_BORN_N =
+           case_when(BORNUS == 1 ~ "U.S. Born",
+                     BORNUS == 2 ~ "U.S. Born",
+                     BORNUS == 3 ~ "Foreign Born"),
+         US_BORN_N = factor(US_BORN_N,
+                            levels = c("Foreign Born", "U.S. Born")),
+         HOUSE_HOLD_N =
+           case_when(HOUHOLD == 99 ~ NA,
+                     TRUE ~ as.numeric(HOUHOLD)))
+```
+
+
+```{r}
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(HOUSE_HOLD_N) %>% 
+  print(n=30)
+```
+
+
+
+```{r}
+t.test(HOUSE_HOLD_N ~ US_BORN_N, data = LNS, conf.level = .95, alternative = c("two.sided"))
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CONSERV_1 =
+           case_when(IDEOLOGY == 1 ~ 1,
+                     IDEOLOGY == 2 ~ 0,
+                     IDEOLOGY == 3 ~ 0,
+                     IDEOLOGY == 4 ~ 0,
+                     IDEOLOGY == 5 ~ 0)) 
+
+LNS <- LNS %>% 
+  mutate(CONSERV_2 = if_else(IDEOLOGY == 1, 1, 0))
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_1)
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_2)
+```
+
+```{r}
+  prop.test(x=c(1338,  638),
+            n=c(5717, 2917) , 
+            conf.level = .95, 
+            alternative = c("two.sided"))
+```
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GOV_INC =
+           case_when(INCSUPP == 1 ~ "Strongly Oppose",
+                     INCSUPP == 2 ~ "Oppose",
+                     INCSUPP == 3 ~ "Support",
+                     INCSUPP == 4 ~ "Strongly Support",
+                     INCSUPP == 5 ~ "DK"),
+         GOV_INC = factor(GOV_INC, 
+                          levels = c("Strongly Oppose", 
+                                     "Oppose",
+                                     "Support",
+                                     "Strongly Support",
+                                     "DK")))
+
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100)
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CHILDREN =
+           case_when(NUMKIDS == 0 ~ "No Children",
+                     NUMKIDS > 0 & NUMKIDS < 99 ~ "Children",
+                     NUMKIDS == 99 ~ NA),
+         CHILDREN = factor(CHILDREN,
+                           levels = c("Children", "No Children")))
+```
+
+```{r}
+
+LNS %>% 
+  group_by(GENDER, CHILDREN) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100) %>% 
+  print(n=30)
+
+```
+
+
+```{r}
+CMPS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Final/Data/CMPS.dta"))
+```
+
+
+```{r}
+CMPS.lat <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2)
+```
+
+
+```{r}
+CMPS.Mex <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S10 == 12)
+```
+
+
+```{r}
+CMPS.first.gen <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S7 == 2) %>% 
+  select (S3, S4, S6)
+```
+
+```{r, echo=FALSE}
+write_dta(CMPS.first.gen, "CMPS_recoded.dta", version=14)
+```
+
+```{r}
+library(haven)
+
+CMPS <- read_dta("CMPS_recoded.dta")
+```
+
+#### On your own:
+
+#### 1:
+
+
+
+```{r oyo1}
+
+```
+
+#### 2:
+
+
+
+```{r oyo2}
+
+```
+
+#### 3:
+
+
+
+```{r oyo3}
+
+```
+
+
+
+* * *
