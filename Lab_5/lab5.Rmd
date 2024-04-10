@@ -82,19 +82,18 @@ corr <- cor(LNS.corr, use = "complete")
 
 
 ```{r}
-p.mat <- cor_pmat(LNS.corr)
+pvalues.mat <- cor_pmat(LNS.corr)
 
 ```
 
 ```{r}
 ggcorrplot(corr,
-           hc.order = TRUE,
            type = "lower", 
-           p.mat = p.mat,
+           p.mat = pvalues.mat,
            lab = TRUE, 
-           sig.level = .05)
+           sig.level = .05, 
+           insig = "blank")
 ```
-
 
 ```{r}
 write_dta(LNS, "LNS_recoded.dta", version=14)
@@ -102,7 +101,7 @@ write_dta(LNS, "LNS_recoded.dta", version=14)
 
 
 ```{r}
-CMPS <- read_dta("LNS_recoded.dta")
+LNS.n <- read_dta("LNS_recoded.dta")
 ```
 
 # Sources
