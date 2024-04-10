@@ -1,0 +1,112 @@
+---
+title: "lab5"
+author: ""
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_5/lab5.Rmd", destfile = "lab5.Rmd")
+```
+
+```{r}
+install.packages(c("stargazer", "ggcorrplot"))
+```
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+library(stargazer)
+library(ggcorrplot)
+library(magrittr)
+```
+
+```{r}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(YEARS_RES = 
+         case_when(LGTHRES == 99 ~ NA,
+                   TRUE ~ as.numeric(LGTHRES)),
+         EDUC = REDUC)
+```
+
+```{r}
+m1 <- lm(YEARS_RES ~ EDUC, data = LNS)
+
+summary(m1)
+
+```
+
+```{r}
+m2 <- lm(YEARS_RES ~ AGE + EDUC, data = LNS)
+
+summary(m2)
+```
+
+
+
+```{r}
+stargazer(m2,  type = "text")
+```
+
+```{r}
+LNS %$%
+  cor(AGE, YEARS_RES,
+      use = "complete") 
+
+LNS %$%
+  cor.test(AGE, YEARS_RES, 
+           conf.level = .95)
+
+```
+
+```{r}
+LNS <- LNS %>% 
+  mutate(INCOME = 
+           case_when(HHINC == 8 ~ NA,
+                     TRUE ~ as.numeric(HHINC)))
+```
+
+
+```{r}
+LNS.corr <- LNS %>%  
+   select(AGE, EDUC, INCOME, YEARS_RES)
+  
+corr <- cor(LNS.corr, use = "complete")
+```
+
+
+```{r}
+p.mat <- cor_pmat(LNS.corr)
+
+```
+
+```{r}
+ggcorrplot(corr,
+           hc.order = TRUE,
+           type = "lower", 
+           p.mat = p.mat,
+           lab = TRUE, 
+           sig.level = .05)
+```
+
+
+```{r}
+write_dta(LNS, "LNS_recoded.dta", version=14)
+```
+
+
+```{r}
+CMPS <- read_dta("LNS_recoded.dta")
+```
+
+# Sources
+
+-   R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
+-   R for Data Science:<https://r4ds.hadley.nz/intro>
+-   Simple Psychology: <https://www.simplypsychology.org/p-value.html>
