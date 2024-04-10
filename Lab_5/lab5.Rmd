@@ -99,13 +99,42 @@ ggcorrplot(corr,
 write_dta(LNS, "LNS_recoded.dta", version=14)
 ```
 
-
 ```{r}
-LNS.n <- read_dta("LNS_recoded.dta")
+ggplot(LNS, aes(x=AGE, y=YEARS_RES)) +
+  geom_point(size=3) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
 ```
 
+```{r}
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+
+
+LNS <- LNS %>% 
+  mutate(BIRTH_PLACE =
+           case_when(BORNUS == 1 ~ "U.S. Born",
+                     BORNUS == 2 ~ "U.S. Born",
+                     BORNUS == 3 ~ "Foreign Born"))
+         
+         
+
+
+
+ggplot(LNS, aes(x=AGE, y=YEARS_RES, colour = GENDER)) +
+  geom_point(size=3) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
+
+ggplot(LNS, aes(x=AGE, y=YEARS_RES, colour = BIRTH_PLACE)) +
+  geom_point(size=3) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
+
+```
 # Sources
 
 -   R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
 -   R for Data Science:<https://r4ds.hadley.nz/intro>
--   Simple Psychology: <https://www.simplypsychology.org/p-value.html>
