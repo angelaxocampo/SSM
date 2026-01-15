@@ -1,0 +1,92 @@
+---
+title: 'Course Introduction: Downloading R and RStudio'
+author: "Professor Ocampo"
+date: "January 13, 2026"
+output:
+  html_document: 
+    theme: cosmo
+    toc: true
+  pdf_document: default
+  toc: yes
+---
+# Introduction
+
+Throughout the course, we will use R and RStudio. R is an open-source software that will allow us to run analysis and practice quantitative reasoning skills throughout the semester. You can use R in its base form. However, we will use the RStudio interface in order to make it easier for us to run analysis and see output within the same window. RStudio will also allow us to do the labs and insert R code. To download R and RStudio, follow the instructions below depending on the type of computer you have. Then proceed to submit Lab 0 directly on Canvas.
+
+
+
+# For Mac Users
+
+## To Install R 
+*	Open an internet browser and go to https://www.r-project.org./
+*	Click `CRAN` under the word Download on the left-hand side of the page. 
+*	Select a CRAN location by going to the USA list and clicking this https://repo.miserver.it.umich.edu/cran/. It is the third one on the list.
+*	Click on the `Download R for macOS`
+*	Check whether you have an Intel or an M1/M2 processor by clicking on the apple in the top left corner of your computer and selecting `About this Mac` 
+*	If the `Processor` or `Chip` is listed as M1 or M2:
+*	Click the link for R-4.3.1-arm64.pkg (the first one)
+*	If the `Processor` or `Chip` is listed as Intel:
+* Click the link for R-4.3.1-x86_64.pkg (the second one)
+*	Save the .pkg file, double-click it to open, and follow the installation instructions. 
+
+Now that R is installed, you need to download and install RStudio.
+ 
+## To Install RStudio 
+-	Go to http://www.rstudio.com and click on the `Download RStudio` button. 
+-	Click on `Download RStudio Desktop.` (The free one!)
+-	Click `Download RStudio Desktop for MACOS 11+`
+-	Note: If you have not updated your operating system (done a computer update) since 2020, you may need to click `download a previous version` and then `View previous versions` and select the one for the operation system you have. 
+-	Follow the installation instructions.
+
+
+## Setting A Working Directory
+-	A working directory is the place where your files are stored. You want all of your files in one folder, so that the computer can find them. R can only look in one place at a time.
+-	To start, create a file folder on your desktop and label it “MAS 350C” 
+- Within that folder, make a folder titled “Lab 0”
+-	Download `MAS 350C Lab 0.Rmd` from Canvas and save it in the Lab 0 folder in your MAS 350C folder. `MAS 350C Lab 0.Rmd` is in the Week One Module on Canvas and also under the Assignments tab under Lab 0.
+-	Open RStudio, click File > Open File and open the `MAS 350C Lab 0.Rmd` file. 
+- If RStudio asks you download any packages, you can click on `Install` and install them.
+- If you have saved your MAS 350C and Lab 0 folders correctly, then you should be able to run the first line of code, which is getwd(). This shows up under the following code snippet: ```{r echo = FALSE}  
+- To test if it works, highlight just that line of code and either click the run button in the upper right corner (it’s next to a green arrow!) or press both `command` and `return` at the same time. You can also click on `Run All` and it should also work. It should show you, It should show you something like this: `/Users/yourusername/Desktop/MAS 350C /Lab 0` if it works correctly. 
+- For example, mine looks like this:
+![](lab0.png)
+-	Take a screenshot and upload it to the Assignment in Canvas titled `Lab 0` so that I know it worked.
+-	If you have any issues, email me or set up a meeting in office hours.
+
+
+# For Windows Users
+
+## To Install R
+-	Open an internet browser and go to https://www.r-project.org./ 
+-	Click `CRAN` under the word Download on the left-hand side of the page. 
+-	Select a CRAN location by going to the USA list and clicking this link: https://repo.miserver.it.umich.edu/cran/. It is the third one on the list.
+-	Click on the `Download R for Windows` link at the top of the page. 
+-	Click on the `install R for the first time` link at the top of the page. 
+-	Click `Download R-4.3.1 for Windows` and save the executable file somewhere on your computer. Run the .exe file and follow the installation instructions. 
+-	Now that R is installed, you need to download and install RStudio. 
+
+## To Install RStudio 
+-	Go to http://www.rstudio.com and click on the `Download RStudio` button. 
+-	Click on `Download RStudio Desktop.` (The free one!)
+-	Click on the version recommended for your system (likely RSTUDIO-2023.06.1-524.EXE), and save the executable file. 
+-	Follow the installation instructions.
+
+## Setting A Working Directory
+-	A working directory is the place where your files are stored. You want all of your files in one folder, so that the computer can find them. R can only look in one place at a time.
+-	To start, create a file folder directly in your documents folder and label it “MAS 350C.” Make a folder within this folder titled “Lab 0.”
+-	Download `MAS 350C Lab 0.Rmd` from Canvas and save it in the Lab 0 folder in your MAS 350C folder.  `MAS 350C Lab 0.Rmd` is in the Week One Module on Canvas and also under the Assignments tab under Lab 0.
+-	Open RStudio, click File > Open File and open the `MAS 350C Lab 0.Rmd` file.
+- If RStudio asks you download any packages, you can click on `Install` and install them.
+- If you have saved your MAS 350C and Lab 0 folders correctly, then you should be able to run the first line of code, which is getwd(). This shows up under the following code snippet: ```{r echo = FALSE}
+- To test if it works, highlight just that line of code and either click the run button in the upper right corner (it’s next to a green arrow!) or press both `cntl` and `enter` at the same time. You can also click on `Run All` and it should also work. It should show you something like this “C://YOURUSERNAME/Desktop/Documents/MAS 350C/Lab 0" if it works correctly. 
+
+- For example, mine looks like this:
+![](lab0.png)
+-	Take a screenshot and upload it to the Assignment in Canvas titled `Lab 0` so that I know it worked.
+-	If you have any issues, email me or set up a meeting in office hours
+
+# Sources
+- Morell, Sara. Downloading R. 
+- Garcia-Rios. Puzzle Solving with Data. https://garciarios.github.io/govt_3990/index.html
+
+

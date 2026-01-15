@@ -1,0 +1,13 @@
+---
+title: "Lab 0"
+output:
+  html_document:
+    theme: simplex
+---
+
+```{r echo =  FALSE} 
+
+getwd()
+
+```
+
