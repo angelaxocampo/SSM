@@ -82,15 +82,15 @@ getwd()
 ```
 
 ```{r, eval=FALSE}
-setwd("~/Desktop/MAS 374/Lab 1")
+setwd("~/Desktop/MAS 350C/Lab 1")
 ```
 
 # Creating a Reproducible Lab Report
 
-We will be using R Markdown, to type up the lab reports. This allows you to complete your labs entirely in RStudio as well as ensuring reproducibility of your R analysis and results. To help get you started, I am providing a template for you. Use the following code to download this template. Run the code below in RStudio. Because you have know set the correct folder structure, this .Rmd file will download directly into your Lab 1 folder. 
+We will be using R Markdown, to type up the lab reports. This allows you to complete your labs entirely in RStudio as well as ensuring reproducibility of your R analysis and results. To help get you started, I am providing a template for you. Use the following code to download this template. Run the code below in RStudio. Because you have know set the correct folder structure, this .Rmd file will download directly into your Lab 1 folder. You can also download it directly from Canvas.
 
 ```{r load-template, eval=FALSE }
-download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/lab1.Rmd", destfile = "lab1.Rmd")
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/lab1.Rmd", destfile = "lab1.Rmd")
 ```
 
 # Loading data
@@ -136,10 +136,10 @@ Because there are so many variables, we will have to work with the codebook to i
 A codebook provides information about the structure, contents and layout of a data file. You should always review a codebook before downloading data or starting to work on data analysis. You can download the codebook for the LNS from here:
 
 ```{r, eval=FALSE}
-download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Codebook/Codebook.pdf", destfile = "LNS_Codebook.pdf")
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Codebook/Codebook.pdf", destfile = "LNS_Codebook.pdf")
 ```
 
-
+https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta
 # Organizing and Summarizing Data
 
 Let's say we are first interested in understanding where Latinos who were surveyed live. Looking at the codebook, we learn that the variable called `RSTATE` represents the state of residency of respondents. To get a sense of the distribution we can run the following code.

@@ -36,7 +36,7 @@ library(haven)
 
 This is how you load the data
 ```{r}
-LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta"))
 ```
 
 #### Exercise 1: 
