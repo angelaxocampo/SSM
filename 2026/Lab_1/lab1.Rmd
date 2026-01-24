@@ -19,13 +19,6 @@ editor_options:
 
 ### Sub subtitle
 
-***Install packages***
-
-```{r}
-install.packages("tidyverse", "haven")
-```
-
-
 ***Load Necessary packages***
 ```{r,  include=FALSE}
 library(tidyverse)
