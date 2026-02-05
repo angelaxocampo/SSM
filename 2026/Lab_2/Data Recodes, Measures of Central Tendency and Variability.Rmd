@@ -1,0 +1,191 @@
+---
+title: "Data Recodes, Measures of Central Tendency and Variability "
+author: "Professor Ocampo"
+date: "February 5, 2026"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+# Introduction
+
+Hopefully you are becoming more familiar with R, R Studio and R markdown. We will begin working with data more closely now to practice additional tools we are acquiring in class.
+
+First, create a folder `Lab 2` within your `MAS 350C` folder. Set it as your working directory. Then download the lab2.rmd file so you can use it as a template. You can download it from Canvas or from my GitHubpage.
+
+```{r, eval=F}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_2/lab2.Rmd", destfile = "lab2.Rmd")
+```
+
+Let's first load (or install) all the necessarily packages. Remember that two of these should all already be installed in your computer. But you need to install a new package called `forecats`. If you need to install any package moving forward just type `install.packages()` and insert the name of the package within the parenthesis with quotation marks.
+
+```{r, eval=FALSE}
+install.packages("forcats")
+```
+
+Load all of the necessary packages.
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+Let's now load the data.
+
+```{r load, echo=TRUE}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta"))
+```
+
+# Summary statistics
+
+Summary statistics help us summarize the data. The function summary returns a numerical summary and some *measures of central tendency*: minimum, first quartile, median, mean, third quartile, maximum.
+
+To calculate the summary statistics for the `AGE` variable type:
+
+```{r}
+LNS %>%
+  select(AGE) %>%
+  summary()
+```
+
+
+Since R also functions like a very fancy calculator, you can use these statistics to then calculate the interquartile range (IQR) for  the AGE variable. Once the summary function gave us Q_3 and Q_1 we ca use both values for the IRQ.
+
+```{r}
+51-28
+```
+
+You can use R to create a boxplot of the `AGE` variable.
+
+```{r}
+ggplot(LNS, aes(y = AGE)) + 
+    geom_boxplot(na.rm=T)
+
+```
+
+You can also individually calculate summary statistics, and make your own customized list of them using the summarise function. We are calculating medians, means and standard deviations for the variables `AGE` and `ARRIVEUS`, which are: age of respondents and the year of arrival for Latino respondents who immigrated to the U.S.
+
+```{r}
+ LNS %>%
+  summarise(median_age = median(AGE, na.rm=T),
+            mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T),
+            median_arrive = median(ARRIVEUS, na.rm=T),
+            mean_arrive = mean(ARRIVEUS, na.rm=T), 
+            sd_arrive = sd(ARRIVEUS, na.rm=T))
+```
+
+
+What do you learn from these?
+
+Average age of our respondents is 40 years old, the standard deviation is 15.5 years. The median of the age variable is 38, and the median of year of arrival is 1990. 
+
+Okay, let's say we want to analyze differences across men and women in our sample. We use the function `group_by()`, then use a pipe operator and then use the `summarise()` function. Any patterns?
+
+```{r}
+ LNS %>%
+  group_by(SEX) %>% 
+  summarise(mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T), 
+            mean_arrive = mean(ARRIVEUS, na.rm=T), 
+            sd_arrive = sd(ARRIVEUS, na.rm=T))
+```
+
+Surprisingly not a lot of differences across men and women in the LNS. Let's just also double check and create a boxplot for men and women in the sample.
+
+```{r}
+ggplot(LNS, aes(x=SEX, y = AGE, fill=SEX)) + 
+    geom_boxplot(outlier.colour="black", 
+                 na.rm=T)
+```
+
+
+What about by nativity (where respondents were born)? Are respondents who were born in the U.S. and those who born in another country or in Puerto Rico differ in age?
+```{r}
+ LNS %>%
+  group_by(BORNUS) %>% 
+  summarise(median_age= median(AGE,na.rm=T),
+            mean_age = mean(AGE, na.rm=T), 
+            sd_age = sd(AGE, na.rm=T)) 
+```
+
+Some interesting differences!
+
+As you might recall, we cannot use the median or the mean as measures of central tendency for all types of variables. We actually use the mode for ordinal types of measures or variables. To calculate the mode, we simply have to find the category with the highest frequency. Sometimes this is easier to identify with a frequency table, which you already know how to construct, but sometimes it helps to order it in descending order. We can use the code below to create our frequency table, and order the frequencies from highest to lowest. In this way, it is much easier to determine what the mode is. The mode, or category with the highest frequency, in the `RSTATE` variable is California. 
+
+``` {r}
+LNS %>% 
+  count(RSTATE) %>%
+    mutate(pct = prop.table(n) * 100) %>% 
+    arrange(desc(pct))
+```
+
+# Data Recodes
+
+Recoding and cleaning data is one of the most important parts that researchers have to do prior to doing data analysis. Sometimes, we even need to recode data prior to visualizing it (graphing it) and calculating measures of central tendency or variability. You will certainly need to know how to recode data and variables for your final project. We will spend the rest of the lab doing recodes and data cleaning.
+
+Even though a variable may be nominal, sometimes the categories of a variable might be listed as numbers. For example, let's look at the partisanship variable. When I create a frequency table or a plot of `PARTYID` the categories of this nominal variable show up as 1,2,3,4..etc. Let's run the code to see that.
+
+```{r}
+LNS %>% 
+  count(PARTYID) %>%
+  mutate(pct = prop.table(n) * 100) 
+
+ggplot(LNS, aes(PARTYID)) +
+  geom_bar()
+```
+
+In this case, we want to recode the variable into a factor, that includes the levels of the nominal variable listed as categories, rather than numbers. Knowing how to recode variables is one of the most important skills in quantitative social science. So try to practice this skill as much as possible. When we begin to do bivariate and multivariate analysis we will need to recode variables in various ways. Sometimes we might need to recode a categorical variable from listed categories back into a variable that might include numbers. We will discuss this later in the semester. For now, let's recode the `PARTYID` variable using the `mutate()` function, the `case_when()` function. We will also force into a factor, and organize its levels in order so that they can appear in order when we make tables or graphs. 
+
+When we recode something, we always want to create a new variable so as to not write over the original variable. So we will create a new variable called `PARTYID_N`. This way, we will know it is the new variable. In the code below, we are telling R to create the new factor variable using code from the old variable, and then replace the number codes into their respective categories. We are also telling it the levels, and by doing so, we are telling it to organize it in this way for us. 
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(PARTYID_N = 
+           case_when(PARTYID == 1 ~ "Democrat",
+                     PARTYID == 2 ~ "Republican",
+                     PARTYID == 3 ~ "Independent",
+                     PARTYID == 4 ~ "Don't care",
+                     PARTYID == 5 ~ "Don't know/other party"),
+         PARTYID_N = factor(PARTYID_N, levels = 
+                              c("Democrat", "Republican","Independent",
+                                                  "Don't care", "Don't know/other party")))
+```
+
+Great, if we now create a bar graph, we can visualize the data much better.
+
+```{r}
+ggplot(LNS, aes(PARTYID_N)) +
+  geom_bar()
+```
+
+Instead of plotting the raw frequencies we can plot the percentage distribution by using the following code. You would use the same code that you would use for to create frequencies and percentage distributions, then use the pipe operator `%>%` to use that information to create your bar graph. Lastly, you can modify the text or the labels so that it is legible to others and is clear about what the graph represents. We are going to do a 45 degree rotation on the variable label for the x-axis.  
+
+```{r}
+LNS %>% 
+  count(PARTYID_N) %>%
+  mutate(pct = prop.table(n) * 100) %>% 
+  ggplot(aes(x = PARTYID_N, y = pct)) + 
+    geom_col() +
+  xlab("Partisanship") + ylab("Percentage") +
+  theme(axis.text.x = element_text(angle=45, vjust = .5))
+  
+```
+
+
+# On your own
+
+(1.) (a.) Calculate summary statistics for the number of individuals that live in a person's household in the LNS. (Hint: the variable is called  `HOUHOLD`) (b.) Calculate the interquartile range for the no. of individuals in a person's household. (c.) Create a box plot for this variable.
+
+(2.) (a.) Create a histogram of the number of children that respondents have. How would you describe this distribution? (Hint: `NUMKIDS` is the variable name.) (b.) Calculate the median, mean and standard deviation for the number of children for respondents in the LNS.
+
+(3.) (a.) Create a bar graph displaying the percentage distribution of the income variable in order from lowest to highest level. (b) Describe what type of distribution it is and explain how you know this. (Hint: to do this, you will need to recode income `HHINC` by recoding the numeric values into actual categories arranged in order.)
+
+# Sources
+- Garcia-Rios. Puzzle Solving with Data. <https://garciarios.github.io/govt_3990/index.html>
+- R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
+- R for Data Science:<https://r4ds.hadley.nz/intro>
