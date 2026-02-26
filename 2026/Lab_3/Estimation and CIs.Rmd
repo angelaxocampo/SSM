@@ -1,0 +1,245 @@
+---
+title: "Lab 3 - Estimation and Confidence Intervals"
+author: "Professor Ocampo"
+date: "February 26, 2026"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introduction
+
+In this lab we will continue to practice our recoding skills, data visualization (graphing) skills and we will begin practicing estimation skills. We will learn how to construct confidence intervals in R and how to plot them.
+
+First, create a folder `Lab 3` within your `MAS 350C` folder. Set it as your working directory. Then download the lab3.rmd file (below) so you can use it as a template.
+
+```{r, eval=F}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_3/lab3.Rmd", destfile = "lab3.Rmd")
+```
+
+Let's first load all the necessarily packages.
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+Let's load the LNS data.
+
+```{r load, echo=TRUE}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta"))
+```
+
+# Recodes
+
+Up until labs 2 and 3, the professor has been recoding several variables for you so that these were easier to work with. From now on, you will have to recode your own variables and practice these skills in order to be able to recode the variables for your final project. As you might recall, there are various types of variables with distinct levels of measurement. But regardless of the level of measurement, sometimes we use numbers such as 0, 1, etc. to classify observations from categories such as "male" and "female" despite the fact that *gender* is a nominal variable. Something similar happens with ordinal variables. Sometimes, we use the numbers 1 through 5 to represent a range of responsses going from "strongly disagree" to "strongly agree."
+
+Let's say we are interested in looking at parentage and generation. We want to better understand if the parents and grandparents of Latino respondents in the LNS were born in the U.S. or abroad. Examining this variable is important because it gives is an idea of respondents are second or third generation or more. (Recall that first generation Latinos are immigrants born abroad, second generation are Latinos born in the U.S. to immigrant parents, third generation are Latinos born in the U.S. to U.S. born parents and foreign born grandparents.)
+
+To examine generation, we need to find the appropriate variables in the codebook and recode them in a way that we can create frequency distributions, percentage distributions, and graph them. After looking at the codebook we realize that the variables we need are called `PARBORN` and `GRANBORN`. 
+
+When we examine these two variables, and try to create frequency and percentage distributions we immediately realize we need to recode them to make sense of the number codes the variables have. (Even though the names of the categories show up in grey color font, they will not show up when we try to graph these. Let's try that ... )
+
+```{r}
+LNS %>% 
+  count(PARBORN) %>% 
+  mutate(pct = prop.table(n) * 100)
+```
+
+```{r}
+LNS %>% 
+  count(GRANBORN) %>% 
+  mutate(pct = prop.table(n) * 100)
+```
+
+```{r}
+LNS %>% 
+  count(PARBORN) %>% 
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARBORN, y = pct)) + 
+    geom_col() +
+  xlab("Parents birth place") + ylab("Percentage")
+```
+
+```{r}
+LNS %>% 
+  count(GRANBORN) %>% 
+  mutate(pct = prop.table(n) * 100) %>% 
+  ggplot(aes(x = GRANBORN, y = pct)) + 
+    geom_col() +
+  xlab("Grandparents birth place") + ylab("Percentage")
+```
+
+So, let's do some recodes to better understand where the parents of Latinos in the LNS were born. We can also decide here to combine categories because we realize that categories 4 and 5, which represent "Don't know" and "Refused" are too similar and we can collapse them together into one single category. We decide to call this the "DK/Refused" category. When combining two categories into one, make sure that the text is exactly the same, otherwise your code will not combine them into one category.
+
+```{r}
+LNS <- LNS %>%  
+  mutate(PARENTS_BIRTHPLC = 
+           case_when(PARBORN == 1 ~ "One parent born in the U.S.",
+                     PARBORN == 2 ~ "Both parents born in the U.S.",
+                     PARBORN == 3 ~ "Neither parent born in the U.S.",
+                     PARBORN == 4 ~ "DK/Refused",
+                     PARBORN == 5 ~ "DK/Refused"),
+         PARENTS_BIRTHPLC = factor(PARENTS_BIRTHPLC, 
+                            levels =  c("One parent born in the U.S.", 
+                                        "Both parents born in the U.S.",
+                                        "Neither parent born in the U.S.",
+                                        "DK/Refused")))
+```
+
+If we create our frequency distributions and graph for our new variables *PARENTS_BIRTHPLC* and , we should now see the categories as we created them and we should now see a total of four categories, as opposed to five.
+
+```{r}
+LNS %>% 
+  count(PARENTS_BIRTHPLC) %>%
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARENTS_BIRTHPLC, y = pct)) + 
+    geom_col() +
+  xlab("Parents birth place") + ylab("Percentage") +
+  theme(axis.text.x = element_text(angle=45, vjust = .5))
+  
+```
+
+Okay, let's say, we want to examine differences by gender. We have to make sure the gender variable is recoded (if we want to use its categories with the labels.) If not, we have to recode it. Then, we would simply add on the code group_by to the code above plus our pipe operator, and we would get frequencies and percentages by gender. We can also tell ggplot to plot those gender differences by putting our variable of interest (gender) in the fill asthetic.
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+```
+
+We can make two versions of the graph:
+
+Version 1: color coding by gender all in one graph.
+```{r}
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(PARENTS_BIRTHPLC) %>%
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARENTS_BIRTHPLC, y = pct, fill=GENDER)) + 
+    geom_col(position = "dodge") +
+  xlab("Parents birth place") + ylab("Percentage") +
+  theme(axis.text.x = element_text(angle=45, vjust = .5)) 
+```
+
+Version 2: splitting up the graph by gender into two seperate ones. For this, you can use the *facet_wrap* feature.
+```{r}
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(PARENTS_BIRTHPLC) %>%
+  mutate(pct = prop.table(n) * 100)  %>% 
+  ggplot(aes(x = PARENTS_BIRTHPLC, y = pct, fill=GENDER)) + 
+    geom_col(position = "dodge") +
+  xlab("Parents birth place") + ylab("Percentage") +
+  theme(axis.text.x = element_text(angle=45, vjust = .5)) +
+  facet_wrap(~ GENDER)
+```
+
+
+
+So far, we have been recoding existent variables, but we can also create *new* variables based on existent variables. We can use parents birth place and grandparents birthplace to determine the generation of Latino survey respondents. To create this new variable, we need to use two existent variables, which are: `BORNUS` and  `PARBORN`. We will skip on using the grandparents birthplace variable for now to make things easier for us. Recall from above, how we define generations and let's use these two variables to create our new generation variable. We have to think about all the possible combinations and ensure we are recoding for all of them when we create our new variable. Here we will use the `&` sign in the recode to tell the *case_when()* function to use the existent code from those two variables in combination. We are going to drop respondents that refused to respond or said don't know. 
+
+1. Foreign born respondent, foreign born parents  = 1st generation
+2. P.R. born respondent, foreign born parents  = 2nd generation
+3. U.S. born respondent, foreign born parents = 2nd generation
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GENERATION = 
+         case_when(BORNUS == 1 & PARBORN == 1 ~ "Second",
+                   BORNUS == 1 & PARBORN == 2 ~ "Third +",
+                   BORNUS == 1 & PARBORN == 3 ~ "Second",
+                   BORNUS == 1 & PARBORN == 4 ~ "NA",
+                   BORNUS == 1 & PARBORN == 5 ~ "NA",
+                   BORNUS == 2 & PARBORN == 1 ~ "Second",
+                   BORNUS == 2 & PARBORN == 2 ~ "Third +",
+                   BORNUS == 2 & PARBORN == 3 ~ "Second",
+                   BORNUS == 2 & PARBORN == 4 ~ "Second",
+                   BORNUS == 2 & PARBORN == 5 ~ "Second",
+                   BORNUS == 3 ~ "First"),
+         GENERATION = factor(GENERATION,
+                             levels = c("First", "Second", "Third +", "NA")))
+```
+
+ Let's examine the frequency distribution of our new variable:
+```{r}
+LNS %>% 
+  count(GENERATION) %>%
+  mutate(pct = prop.table(n) * 100)
+```
+
+Below are a few useful operators that you might need when recoding OR sub-setting. This is useful when you want to extract all individuals (cases) in a data set that have specific characteristics or recode data in a specific way.  You can also use the filter function to filter out by specific characteristics.
+
+- `==` means “equal to”
+- `!=` means “not equal to”
+- `>` or `<` means “greater than” or “less than”
+- `>=` or `<=` means “greater than or equal to” or “less than or equal to”
+- ` &` "and"
+- `|` "or"
+
+Let's say we want to filter out all first generation Latinos and examine them separately we can do that by using the following code:
+
+```{r}
+first.gen  <- LNS  %>%
+  filter(GENERATION == "First")
+```
+
+Remember that `<-` creates a new object in R. So now you should now see a separate data int he environment called `first.gen` which only includes those cases. If you want to examine first generation Latinos below the age of 35 and look at gender differences, you would use the following code:
+
+```{r}
+first.gen %>% 
+  filter(AGE < 35) %>% 
+  group_by(GENDER) %>% 
+  count()
+```
+
+# Confidence Intervals
+We have learned how to calculate confidence intervals by hand, we are now going to learn how to calculate them in R. Let's say we want to examine the beliefs about the government among Latinos. Specifically, we want to know if Latinos believe the government is run by a few interests looking out for themselves and not for the benefit of the people. We begin by looking at the variable: `BIGINTST` We want to specifically calculate a confidence interval for the percentage of Latinos who strongly agree with this belief. 
+
+```{r}
+LNS %>% 
+  count(BIGINTST) %>% 
+   mutate(p = prop.table(n) * 100)
+```
+
+When we examine this variable, we realize that there are 37.1% (or .371) Latinos in the LNS  who agree with this view. To construct the confidence interval, we first find the standard error of this proportion, then we use the C.I. formula along with our chosen Z value. Recall that if we want to calculate a 95% confidence interval our Z value is going to be 1.96. `s.e. <- sqrt(p*(1-p)/n)`
+
+
+```{r}
+LNS %>% 
+  count(BIGINTST) %>% 
+  mutate(p = prop.table(n) * 100)
+```
+
+
+```{r}
+s.e. = sqrt(.371*(1-.371)/8634)
+
+lower_co  = .371 - 1.96 * s.e.
+upper_co =  .371 + 1.96 * s.e.
+
+lower_co
+
+upper_co
+```
+
+Based on these results, we are 95% confident that that the true Latino population proportion who strongly agree that the government is run by a few interests lies somewhere between .36 and .38. 
+
+# On your own
+
+(1.) (a.) What is the main reason why Latinos surveyed in the LNS came to live in the U.S.?  (b.) Are there any differences in reasons for migration among men and women? Use frequencies, measures of central tendency, and a graphing technique to assess the differences by subgroups and answer this question. 
+
+(2.) Investigate if there are any differences among Latinos in the LNS with children (regardless of how many) and without children in their views toward support or opposition toward the belief that "undocumented immigrants attending college should be charged a higher tuition rate at state colleges and universities, even if they grew up and graduated high-school in the state." 
+
+(3.) What percentage of Latinos in the LNS believe that Latinos/Hispanics in the United States are treated fairly by the police? Calculate the 90% confidence interval and interpret the results. Is this surprising to you given when the survey was taken, why or why not?
+
+# Sources
+
+-   R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
+-   R for Data Science:<https://r4ds.hadley.nz/intro>
