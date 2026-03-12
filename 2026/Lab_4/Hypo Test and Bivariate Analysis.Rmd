@@ -1,0 +1,301 @@
+---
+title: "Lab 4 - Hypothesis Testing and Bivariate Analysis"
+author: "Professor Ocampo"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Hypothesis Testing
+
+First, create a folder `Lab 4` within your `MAS 374` folder. Set it as your working directory. Then download the lab4.rmd file (below) so you can use it as a template.
+
+```{r,  echo=FALSE}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_4/lab4.Rmd", destfile = "lab4.Rmd")
+```
+
+## Two Sample Means
+
+As you might recall, we have already briefly looked at how we can do hypothesis testing in R during one of our lectures. But we have not practiced these skills. Let's revisit that and practice those again.
+
+We can do simple hypothesis testing in R using some base functions like `t.test` and `prop.test`. Remember that in order to run this analysis (or any analysis for that matter) we must have well recoded variables for us to work with. Let's load packages and read our data.
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+```{r}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta"))
+```
+
+Let's now return to the exercise from a few weeks ago where we did hypothesis testing. We were testing the following statement: The average number of household residents is lower among U.S. born Latinos and foreign born Latinos. To tackle it, we have to recode those born in Puerto Rico as U.S. born individuals along with those born in the mainland U.S. We also have to recode household size because the 99 code stands for missing data, not having 99 people in the household. If we do not recode this variable, our calculations for hypothesis testing will be inaccurate. *Always work with and double-check the codebook to see what each of the codes mean so you can determine what recodes you need to do*
+
+```{r}
+LNS <- LNS %>% 
+  mutate(US_BORN_N =
+           case_when(BORNUS == 1 ~ "U.S. Born",
+                     BORNUS == 2 ~ "U.S. Born",
+                     BORNUS == 3 ~ "Foreign Born"),
+         US_BORN_N = factor(US_BORN_N,
+                            levels = c("Foreign Born", "U.S. Born")),
+         HOUSE_HOLD_N =
+           case_when(HOUHOLD == 99 ~ NA,
+                     TRUE ~ as.numeric(HOUHOLD)))
+```
+
+To ensure we have coded the variable properly, it is always advised to examine the variable(s) and their frequency distributions. We can do this quick examination individually or by grouping them. Here we group them.
+
+```{r}
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(HOUSE_HOLD_N) %>% 
+  print(n=30)
+```
+
+Now, to do statistical hypothesis testing we can use the function `t.test`. We are specifically testing two sample means, the mean of household residents for foreign born Latinos and the mean of household residents for U.S. born Latinos. Our research hypothesis $H_1$ is that they are not equal to each other. Our null hypothesis $H_0$ is that they are equal from each other. We select an alpha level of .05 so we have to set our confidence level at .95.
+
+```{r}
+t.test(HOUSE_HOLD_N ~ US_BORN_N, data = LNS, conf.level = .95, alternative = c("two.sided"))
+```
+
+R computes for us the $t$ statistic, degrees of freedom and the $p$ value. Our $t$ statistic is 16.62 and its $p$ value is <2.2e-16 which is the scientific notation for a p value of 0.00000000000000022. Based on this, we can reject the null hypothesis of no difference for average number of household residents for foreign born Latinos and U.S. born Latinos.
+
+## Two sample proportions
+
+Okay, let's revisit the other example we did. The proportion of U.S. born Latinos compared to foreign born Latinos who report a conservative ideology. Let's recode the variables. We want the proportion of those who do report a conservative ideology so we need to recode the `IDEOLOGY` variable. Below, I will show two ways of recoding this variable. We are already familiar with that one, but sometimes we can use the `if_else()` code when we want to create binary (or dummy variables). There is no one way of doing things in R. You can recode and run analysis in multiple ways. When we use `case_when` and `if_else()`, we are telling R to create the new `CONSERV_2` variable by using the original `IDEOLOGY`. And if the original value of `IDEOLOGY` equals 1, we want the new variable to be set at 1, and all other values to be set a 0.
+
+When we compare the counts of both variables we have created, we notice they are the same. So that's great.
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CONSERV_1 =
+           case_when(IDEOLOGY == 1 ~ 1,
+                     IDEOLOGY == 2 ~ 0,
+                     IDEOLOGY == 3 ~ 0,
+                     IDEOLOGY == 4 ~ 0,
+                     IDEOLOGY == 5 ~ 0)) 
+
+LNS <- LNS %>% 
+  mutate(CONSERV_2 = if_else(IDEOLOGY == 1, 1, 0))
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_1)
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_2)
+```
+
+We propose a two-tailed test that these proportions are not equal. Let's state our hypothesis. The research hypothesis $H_1$ is that the proportion of foreign born Latinos who report a conservative ideology is not equal to the proportion of U.S. born Latinos who report a conservative ideology. The null hypothesis $H_0$ is that the proportions of foreign born Latinos who report a conservative ideology is equal to the proportion of U.S. born Latinos who report a conservative ideology.
+
+To do hypothesis testing of two proportions, we will use the `prop.test` function. We use this instead of `t.test` because these are proportions not means. We use the tallies above. We need to input `x` which is the counts for our proportion, so this is the count of U.S. born and foreign born Latinos who report being conservative. Then we need to input the `n` which is the total of foreign born and U.S. born respondents. We then use the concatenate code `c=()` which basically tells R to combine those into a list. We then set our confidence level at .95, and our alternative to be two sided. We set our alpha to .05 and therefore we have to set our confidence level to .95.
+
+```{r}
+  prop.test(x=c(1338,  638),
+            n=c(5717, 2917) , 
+            conf.level = .95, 
+            alternative = c("two.sided"))
+```
+
+We run the results and we get a chi-squared $X^2$ statistic of 2.48 with a $p$ value of .1151.  In this case, the $X^2$ is the square of the $Z$ statistic. We use the $p$ value to interpret the hypothesis testing. Based on these, the $p$ value is higher than our alpha value. Then, we can conclude that we fail to reject the null hypothesis. We do not have a statistically significant difference between the two proportions. When we fail to reject the null this means that our sample did not provide sufficient evidence to conclude that a difference in effect exists.
+
+# Bivariate Tables and Analysis
+
+We have now begun to work with bivariate analysis. The most straight forward way to run bivariate analysis is to create 2-way and 3-way cross tabulations. The 2-way cross tabulations allow us to examine relationships between variables, how strong these are and in which direction they are. 3-way cross tabs allow us to perform elaboration to test for non-spuriousness, clarify intervening and conditional effects. Let's start with 2-way cross tabs.
+
+## Cross-tabulations (2-way)
+
+The easiest way to create these is to keep using the `group_by()` function and the `count_by()` function from dplyr.
+
+Let's say that we want to examine the relationship between gender and income distribution. In this case, our IV is gender and our DV is beliefs about government income distribution. We first run our recodes and then we create a cross-tabulation table, which will look more like a long table but we can use this information to format it like a cross-tab in a written report.
+
+```{r}
+
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+
+LNS <- LNS %>% 
+  mutate(GOV_INC =
+           case_when(INCSUPP == 1 ~ "Strongly Oppose",
+                     INCSUPP == 2 ~ "Oppose",
+                     INCSUPP == 3 ~ "Support",
+                     INCSUPP == 4 ~ "Strongly Support",
+                     INCSUPP == 5 ~ "DK"),
+         GOV_INC = factor(GOV_INC, 
+                          levels = c("Strongly Oppose", 
+                                     "Oppose",
+                                     "Support",
+                                     "Strongly Support",
+                                     "DK")))
+
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100) 
+```
+
+Is there a relationship between these two variables? Why or why not? What do the percentage differences tell us?
+
+## Three-way cross tabs
+
+Let's suppose there was an actual relationship between gender and beliefs of government income support. But we wanted to test for the possibility of a third variable (having children v. having no children) influencing the relationship between our IV and DV. To do this, we can run a 3-way cross tab. We have to do some recodes first:
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CHILDREN =
+           case_when(NUMKIDS == 0 ~ "No Children",
+                     NUMKIDS > 0 & NUMKIDS < 99 ~ "Children",
+                     NUMKIDS == 99 ~ NA),
+         CHILDREN = factor(CHILDREN,
+                           levels = c("Children", "No Children")))
+
+
+```
+
+We can now create a 3-way cross tab and further examine the relationship. We can `group_by()` the control variable to assess the relationship further. If you want to drop NAs from your table you can use the function `drop_na()` at the very end of your code
+
+```{r}
+LNS %>% 
+  group_by(GENDER, CHILDREN) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100) %>% 
+  print(n=30)  %>% 
+  drop_na()
+```
+
+Does the `CHILDREN` variable influence the relationship between gender and views toward government income support? (Does it change any of the percentages regarding attitudes toward income redistribution among Latinos?)
+
+# Chi-square test
+
+In class, we have also talked about the chi-square test as a test of significant relationships between two variables organized in a bivariate table. Let's practice running a chi-square test. It is straight forward. We first need a bivariate table and then we run the function `chisq.test()` But since the function requires the input of a table, we have to wrangle our data so that it is a table before we run it through the function. Let's run a chi-square test on Latinos' level of education and political views (similar to the textbook demonstration example on pg. 351). Let's go with a chosen $a$ (alpha) of .05. If $p<0.05$,  we can reject the null hypothesis, in other words determining that there is a significant relationship between respondent's level of education and their ideology. If $p > 0.05$, we fail to reject the null hypothesis, meaning no significant relationship was found.
+
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(IDEOLOGY_3 =
+           case_when(IDEOLOGY == 1 ~ "Conservative",
+                     IDEOLOGY == 2 ~ "Liberal",
+                     IDEOLOGY == 3 ~ "Middle of the Road",
+                     IDEOLOGY == 4 ~ "Don't think in these terms",
+                     IDEOLOGY == 5 ~ "DK"),
+         IDEOLOGY_3 = factor(CONSERV_3, 
+                          levels = c("Conservative", 
+                                     "Liberal",
+                                     "Middle of the Road",
+                                     "Don't think in these terms",
+                                     "DK")),
+         EDUCATION_2 =
+           case_when(REDUC == 0 ~ "None",
+                     REDUC == 1 ~ "8th grade or below",
+                     REDUC == 2 ~ "Some H.S.",
+                     REDUC == 3 ~ "GED",
+                     REDUC == 4 ~ "H.S. Grad",
+                     REDUC == 5 ~ "Some college",
+                     REDUC == 6 ~ "4-year college degree",
+                     REDUC == 7 ~ "Grad degree"),
+         EDUCATION_2 =
+           factor (EDUCATION_2, 
+                   levels = c("None",
+                             "8th grade or below",
+                             "Some H.S.",
+                             "GED",
+                             "H.S. Grad",
+                             "Some college",
+                             "4-year college degree",
+                             "Grad degree" )))
+
+
+contingency.t1 <- LNS %>% 
+  count(EDUCATION_2, IDEOLOGY_3) %>%
+  pivot_wider(names_from = IDEOLOGY_3, values_from = n, values_fill = 0) %>%
+  select(-EDUCATION_2) %>%  
+  as.matrix()     
+
+chisq.test(contingency.t1)
+```
+
+The obtained $X^2$ is 547.2. Our degrees of freedom are 28 and our p-value is less than .05, therefore we can reject the null hypothesis of no difference and determine that there is an association between education level and ideology. 
+
+
+# Additional data wrangling
+
+There are a few other coding tools and tricks that you will need in order to be able to do analysis on your own for your final projects. Since we learned to recodes, we have been doing these every time we open RStudio after we have loaded the data. This was meant to help us get in the habit of coding. However, for the final project, you might want to do a few things to make your life easier in terms of coding and saving the data.
+
+The data for the final project can be located in the github file:
+
+Remember that to load this data you need to have the `haven` package loaded into your RStudio.
+
+```{r}
+CMPS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Final/Data/CMPS.dta"))
+```
+
+You can load the data into a new R script and begin doing the recodes that you need for your project. Because the data is very large you can subset the data in various ways. You can subset by racial and ethnic group (Latinos only unless you're comparing to another group), and also choose to select only the variables you're working with.
+
+To subset the Latino sample only use the codebook to know what variable you need to subset by. Then you can use the following code:
+
+(Remember to store this new filtered data as *new* data frame. Do not write over your files!)
+
+```{r}
+CMPS.lat <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2)
+```
+
+To create another subset of only Latinos of Mexican ancestry run following code:
+
+```{r}
+CMPS.mex <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S10 == 12) 
+```
+
+To select first generation Latinos, and only the age, state of residency and gender variables do as follows:
+
+```{r}
+CMPS.first.gen <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S7 == 2) %>% 
+  select(S3, S4, S6)
+
+```
+
+As you can see below, I am accumulating all of the new data frames I have created as subsets of the original CMPS with their corresponding variables.
+
+Let's say you've already run a great deal of recodes and you want to save your work in your data file for next time, you can save the data file by running the `write_dta()` code. If you want to write it into another data format you can use `write_csv`. I do recommend keeping the file in its original Stata forma so use `write_dta()`. Another thing to be mindful of is that the file will save in the working directly that you are working with! So, pay close attention to where you have set your working directory for your final project. To write your data file appropriately you will have to enter 3 things into the `write_dta` function. First input the name of the data file as you have stored it in the RStudio environment. Second, enter the name you want to give it to as a file to be stored in your computer (within quotation marks) and make sure you add the .dta at end to denote it will be a Stata file. Then set the version parameter equals to 14.
+
+```{r eval=F, echo=T}
+write_dta(CMPS.first.gen, "CMPS_recoded.dta", version=14)
+```
+
+Next time you load the data, you can load the recoded CMPS file by using the code `read_dta`. Make sure you have set your working directory to where your data lives so R knows where to load the data from. Otherwise, you will have to write out the correct folder structure.
+
+```{r}
+library(haven)
+
+CMPS <- read_dta("CMPS_recoded.dta")
+```
+
+# On your own
+
+(1.) Is there a significant gender gap in how Latinos report liberal ideology? Rely on hypothesis testing to examine this question. State your hypotheses, perform the steps to test the hypotheses, and interpret the result of your test.
+
+(2.) Evaluate the relationship between Latinos self-reported skin color and their beliefs about how much in common do they have with African Americans in things like government services and employment, political power and representation. Is there a relationship between these two variables? In which direction? How strong?
+
+(3.) Examine the relationship among Latinos in the LNS between attendance of religious services and abortion attitudes. Is there a relationship? In which direction? How strong? What happens when you "control" for being a born-again Christian (or being involved in the charismatic movement) versus being affiliated with any other religion?
+
+# Sources
+
+-   R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
+-   R for Data Science:<https://r4ds.hadley.nz/intro>
+-   Simple Psychology: <https://www.simplypsychology.org/p-value.html>

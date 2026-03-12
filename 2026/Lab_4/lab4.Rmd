@@ -1,0 +1,244 @@
+---
+title: "Lab 4 - Hypothesis Testing and Bivariate Analysis"
+author: "Your name"
+date: "date"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r,  echo=FALSE}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_4/lab4.Rmd", destfile = "lab4.Rmd")
+```
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+```
+
+```{r}
+LNS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Lab_1/Data/LNS.dta"))
+```
+
+```{r}
+LNS <- LNS %>% 
+  mutate(US_BORN_N =
+           case_when(BORNUS == 1 ~ "U.S. Born",
+                     BORNUS == 2 ~ "U.S. Born",
+                     BORNUS == 3 ~ "Foreign Born"),
+         US_BORN_N = factor(US_BORN_N,
+                            levels = c("Foreign Born", "U.S. Born")),
+         HOUSE_HOLD_N =
+           case_when(HOUHOLD == 99 ~ NA,
+                     TRUE ~ as.numeric(HOUHOLD)))
+```
+
+```{r}
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(HOUSE_HOLD_N) %>% 
+  print(n=30)
+```
+
+
+```{r}
+t.test(HOUSE_HOLD_N ~ US_BORN_N, data = LNS, conf.level = .95, alternative = c("two.sided"))
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CONSERV_1 =
+           case_when(IDEOLOGY == 1 ~ 1,
+                     IDEOLOGY == 2 ~ 0,
+                     IDEOLOGY == 3 ~ 0,
+                     IDEOLOGY == 4 ~ 0,
+                     IDEOLOGY == 5 ~ 0)) 
+
+LNS <- LNS %>% 
+  mutate(CONSERV_2 = if_else(IDEOLOGY == 1, 1, 0))
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_1)
+
+LNS %>% 
+  group_by(US_BORN_N) %>% 
+  count(CONSERV_2)
+```
+
+
+```{r}
+  prop.test(x=c(1338,  638),
+            n=c(5717, 2917) , 
+            conf.level = .95, 
+            alternative = c("two.sided"))
+```
+
+
+
+```{r}
+
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+
+LNS <- LNS %>% 
+  mutate(GOV_INC =
+           case_when(INCSUPP == 1 ~ "Strongly Oppose",
+                     INCSUPP == 2 ~ "Oppose",
+                     INCSUPP == 3 ~ "Support",
+                     INCSUPP == 4 ~ "Strongly Support",
+                     INCSUPP == 5 ~ "DK"),
+         GOV_INC = factor(GOV_INC, 
+                          levels = c("Strongly Oppose", 
+                                     "Oppose",
+                                     "Support",
+                                     "Strongly Support",
+                                     "DK")))
+
+LNS %>% 
+  group_by(GENDER) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100) 
+```
+
+```{r}
+LNS <- LNS %>% 
+  mutate(CHILDREN =
+           case_when(NUMKIDS == 0 ~ "No Children",
+                     NUMKIDS > 0 & NUMKIDS < 99 ~ "Children",
+                     NUMKIDS == 99 ~ NA),
+         CHILDREN = factor(CHILDREN,
+                           levels = c("Children", "No Children")))
+
+
+```
+
+
+```{r}
+LNS %>% 
+  group_by(GENDER, CHILDREN) %>% 
+  count(GOV_INC) %>% 
+  mutate(pct = prop.table(n) * 100) %>% 
+  print(n=30)  %>% 
+  drop_na()
+```
+
+
+```{r}
+LNS <- LNS %>% 
+  mutate(IDEOLOGY_3 =
+           case_when(IDEOLOGY == 1 ~ "Conservative",
+                     IDEOLOGY == 2 ~ "Liberal",
+                     IDEOLOGY == 3 ~ "Middle of the Road",
+                     IDEOLOGY == 4 ~ "Don't think in these terms",
+                     IDEOLOGY == 5 ~ "DK"),
+         IDEOLOGY_3 = factor(CONSERV_3, 
+                          levels = c("Conservative", 
+                                     "Liberal",
+                                     "Middle of the Road",
+                                     "Don't think in these terms",
+                                     "DK")),
+         EDUCATION_2 =
+           case_when(REDUC == 0 ~ "None",
+                     REDUC == 1 ~ "8th grade or below",
+                     REDUC == 2 ~ "Some H.S.",
+                     REDUC == 3 ~ "GED",
+                     REDUC == 4 ~ "H.S. Grad",
+                     REDUC == 5 ~ "Some college",
+                     REDUC == 6 ~ "4-year college degree",
+                     REDUC == 7 ~ "Grad degree"),
+         EDUCATION_2 =
+           factor (EDUCATION_2, 
+                   levels = c("None",
+                             "8th grade or below",
+                             "Some H.S.",
+                             "GED",
+                             "H.S. Grad",
+                             "Some college",
+                             "4-year college degree",
+                             "Grad degree" )))
+
+
+contingency.t1 <- LNS %>% 
+  count(EDUCATION_2, IDEOLOGY_3) %>%
+  pivot_wider(names_from = IDEOLOGY_3, values_from = n, values_fill = 0) %>%
+  select(-EDUCATION_2) %>%  
+  as.matrix()     
+
+chisq.test(contingency.t1)
+```
+
+
+```{r}
+CMPS <-read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/2026/Final/Data/CMPS.dta"))
+```
+
+```{r}
+CMPS.lat <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2)
+```
+
+```{r}
+CMPS.mex <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S10 == 12) 
+```
+
+```{r}
+CMPS.first.gen <- CMPS %>% 
+  filter(ETHNIC_QUOTA == 2 & S7 == 2) %>% 
+  select(S3, S4, S6)
+
+```
+
+```{r eval=F, echo=T}
+write_dta(CMPS.first.gen, "CMPS_recoded.dta", version=14)
+```
+
+
+```{r}
+library(haven)
+
+CMPS <- read_dta("CMPS_recoded.dta")
+```
+
+#### On your own:
+
+#### 1:
+
+
+
+```{r oyo1}
+
+```
+
+#### 2:
+
+
+
+```{r oyo2}
+
+```
+
+#### 3:
+
+
+
+```{r oyo3}
+
+```
+
+
+
+* * *
