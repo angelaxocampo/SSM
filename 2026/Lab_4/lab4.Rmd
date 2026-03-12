@@ -144,7 +144,7 @@ LNS <- LNS %>%
                      IDEOLOGY == 3 ~ "Middle of the Road",
                      IDEOLOGY == 4 ~ "Don't think in these terms",
                      IDEOLOGY == 5 ~ "DK"),
-         IDEOLOGY_3 = factor(CONSERV_3, 
+         IDEOLOGY_3 = factor(IDEOLOGY3_3, 
                           levels = c("Conservative", 
                                      "Liberal",
                                      "Middle of the Road",
