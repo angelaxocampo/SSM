@@ -1,0 +1,217 @@
+---
+title: "Lab 5 - Regressions and Correlations"
+author: "Professor Ocampo"
+date: "`r Sys.Date()`"
+output: 
+  html_document: 
+    toc: true
+    theme: cosmo
+editor_options: 
+  chunk_output_type: console
+---
+
+# Introduction
+
+Today we are going to work on running regressions and correlations. We are also going to work on exporting that output into html or text. We have seen some of this code but our demonstration was cut short when I spilled the water bottle.
+
+You can use some of this code for your own analysis for your final project. Pay close attention to all of the code and the steps that follow. Your only Lab 5 to-do is to review the code from the in-class portion.
+
+# Regression
+
+We are going to start by first creating a folder `Lab 5` within your `MAS 374` folder. Set it as your working directory. Then download the lab5.rmd file (below) so you can use it as a template.
+
+```{r,  echo=FALSE}
+download.file("https://github.com/angelaxocampo/SSM/raw/main/Lab_5/lab5.Rmd", destfile = "lab5.Rmd")
+```
+
+Then you are going to load the packages, and install new packages that we will need for the lab. Please install the packages `stargazer` and `ggcorrplot`.
+
+```{r, eval=FALSE}
+install.packages(c("stargazer", "ggcorrplot"))
+```
+
+Then you can load the packages.
+
+```{r}
+library(tidyverse)
+library(haven)
+library(forcats)
+library(stargazer)
+library(ggcorrplot)
+library(magrittr)
+```
+
+Then you are going to load the LNS data.
+
+```{r}
+LNS <- read_dta(url("https://github.com/angelaxocampo/SSM/raw/main/Lab_1/Data/LNS.dta"))
+```
+
+Let's say we are interested in assessing the relationship between Latinx's level of education and how many years they have lived at their current household. We hypothesize that the more education Latinxs have the less likely they are to move (and therefore live longer in their place of residency). This is probably because they have a more stable life and possibly have purchased a home. We also hypothesize there is a linear relationship between these two variables. So, to begin we make sure all of our data is properly coded or recoded.
+
+We are going to turn the 99's into true NA's and we are going to just create a copy of the education variable. We will not recode it into categories because for the purposes of what we are doing (regression analysis), we should use the numeric codes.
+
+```{r}
+LNS <- LNS %>% 
+  mutate(YEARS_RES = 
+         case_when(LGTHRES == 99 ~ NA,
+                   TRUE ~ as.numeric(LGTHRES)),
+         EDUC = REDUC)
+```
+
+To run the bivariate regression, we simply use the function `lm()` where we define the x and the y variables. `lm()` is a function that is used to fit linear models. The y variable (your dependent variable) will go first, and then a `~` and then x, which is our main independent variable. Lastly, we will tell the function which data we are working with. We assign this to an object, which we will call `m1`. We can look at the summary of the regression model by running the code `summary(m1)`.
+
+```{r}
+m1 <- lm(YEARS_RES ~ EDUC, data = LNS)
+
+summary(m1)
+
+```
+
+This regression output is telling us that the `Estimate` is our $b$, which is .22 (rounded) and our intercept $a$ is 7.1 (rounded). We can also see that our independent variable of education is statistically significant and predictive of our dependent variable having lived in the current address or place. Based on these, our equation would look like: ${y}$ = 7.1 + 0.22$x$.
+
+From this output we can interpret the relationship between x and y as follows: Since the coefficient is positive we can conclude that there is a positive relationship between education and years at current address or place. For a 1 unit increase in education (this is in categories so this would be a 1 unit in how education was measured in the LNS) there is a .22 increase in the number of years that a Latinx individual has lived at their current address or home.
+
+We can see that the $R^2$ is 0.002 (shown as multiple $R^2$ but it is basically the same thing). Recall that the $R^2$ value represents the proportion of variability in the response variable that is explained by the explanatory variable (independent variable). For this model, .2% of the variability in runs is explained by education. Looks like a lot of other factors, which we have not accounted for, could actually improve our model!
+
+The significance test of $R^2$ is automatically done for us, so we just have to interpret the calculated $F$ statistic based on the output. It looks like $F$ = 19.08, and our p-value is $p$=.000012. Based on our degrees of freedom our critical value for $a$=.05, we can reject the null hypothesis that our $R^2$ is zero in the population. So we conclude that the linear relationship between education and time living in an address or place as expressed in $R^2$ is probably greater than zero in the population (given our observed sample coefficient).
+
+# Multivariate Regression
+
+We had statistically significant results, but our $R^2$ was low. Perhaps there are a lot of other variables that can help explain why Latinxs have lived in their current home or place for any given amount of time. Perhaps age matters too, and possible if they are single or married, or if they have children. In order to also account for these other variables, social scientists rely on multivariate regression to incorporate other variables and factors that can predict the dependent variable. We can run multivariate regressions by adding the additional variables or explanatory variables into the models. These are sometimes also referred to as control variables. To add another variable simply add this code to the syntax for the linear function: `+ second variable`. If we expect that age matters a great deal as well in explaining the time that Latinx individuals have lived at their current address or home, then we can add this to the model in the following way:
+
+```{r}
+m2 <- lm(YEARS_RES ~ AGE + EDUC, data = LNS)
+
+summary(m2)
+```
+
+From this output, we can see the effects that both `AGE` and `EDUC` have on Latinxs's `YEARS_RES`. What does the coefficient for `AGE` tell us. Let's fill this out:
+
+With each year [increase] in `AGE` there is a .28 [increase] in `YEARS_RES` when holding [EDUC] constant.
+
+What does the $R^2$ tell us? Is the $R^2$ significant?
+
+To export the regression output you can use the stargazer package and the `stargazer` function. You first type the model that you want exported, and set the type parameter to equal "text". You will get the text on the Console. You can just copy and paste it into your word document.
+
+```{r}
+stargazer(m2,  type = "text")
+
+stargazer(m1, type = "text")
+
+stargazer(m2, type = "html")
+```
+
+# Pearson's correlations
+
+To find the Pearson's correlation in R simply use the function `cor()` and to test the significance of the correlation you can use `cor.test()`. Let's test the correlation between `AGE` and `YEARS_RES`. Make sure you set the `use` parameter to "complete". This will make sure to use all complete observations (and skip over NAs) when computing the correlations. To test the significance of the correlations we use the function `cor.test` and we set the confidence level to .95. Please note that for this analysis you are using this pipe operator: `%$%`
+
+```{r}
+LNS %$%
+  cor(AGE, YEARS_RES,
+      use = "complete") 
+
+LNS %$%
+  cor.test(AGE, YEARS_RES, 
+           conf.level = .95)
+
+```
+
+How do we interpret these results?
+
+How would you report these on a paper (i.e. your final project)? You can report them as follows:
+
+Our research shows a significant positive correlation between age and years living in a given address/location: $t$ = 52, $p$ $<$= .000, Pearson’s $r$(8003) = .50, 95% CI $[0.48, 0.51]$.
+
+Let's say we want to create a correlation plot that shows us the correlations between all the variables we have examined including the variable income. We need to recode income because the code 8 is actually missing data. When running correlations or regressions, if you have codes that stand for "refused" or "don't knows" you need to recode them to true NAs, otherwise your analysis won't properly run. Let's recode income and then create our correlation plot.
+
+```{r}
+LNS <- LNS %>% 
+  mutate(INCOME = 
+           case_when(HHINC == 8 ~ NA,
+                     TRUE ~ as.numeric(HHINC)))
+```
+
+To create our correlation matrix, we will select the variables we need and subset them into a small dataframe. These are: age, education, income and years of residency in a given address among Latinxs. This is a matrix of all Pearson's correlations between all of these variables.
+
+After we subset it, we use the `cor` function to create the correlation matrix.
+
+```{r}
+LNS.corr <- LNS %>%  
+   select(AGE, EDUC, INCOME, YEARS_RES)
+  
+corr <- cor(LNS.corr, use = "complete")
+```
+
+We also have to compute a matrix of the p-values for each of the correlations. This will be used to graph the correlation's and their significance.
+
+```{r}
+pvalues.mat <- cor_pmat(LNS.corr)
+
+```
+
+Then we can now plot the correlations along with the p-values and visualize their significance. Each of the arguments does something in our plot. We first have to enter `corr` which is the correlation matrix. Then we set the p.mat equal to the matrix of the values, which we have named `pvalues.mat`. Then we set `lab = TRUE` because we want the labels to show up, and we set the significance level at .05, this will compare the p-values matrix with our significance level. If the p-value in p-values matrix is bigger than sig.level, then the corresponding correlation coefficient is regarded as insignificant. Then `insig` is equal to "blank" when the correlations coefficients are insignificant.
+
+```{r}
+ggcorrplot(corr,
+           type = "lower", 
+           p.mat = pvalues.mat,
+           lab = TRUE, 
+           sig.level = .05, 
+           insig = "blank")
+```
+
+Lastly, because we haven't had a chance to practice our data writing skills we are going to save the recodes of the variables we have created here so that next time we open up RStudio. We are going to save the LNS data under LNS_recoded so that we *never* write over our original data. To save the LNS data we will use the code `write_dta`. First we enter the name of the LNS, which is the current data we have. The second argument that is going to go inside the quotation marks is the recoded LNS. We will type `LNS_recoded.dta` and then for version we will enter the number 14.
+
+```{r}
+write_dta(LNS, "LNS_recoded.dta", version=14)
+```
+
+When we want to continue working with this dataset, we can read it using the same code we have been using during this class. The only change is that we have to either set the working directory to where the file lives, or specify the path to make sure R can read the file. We can read it as follows:
+
+```{r}
+LNS.n <- read_dta("LNS_recoded.dta")
+```
+
+# Extra
+
+## Scatterplot
+
+```{r}
+ggplot(LNS, aes(x=AGE, y=YEARS_RES)) +
+  geom_point(size=2) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
+```
+
+```{r}
+LNS <- LNS %>% 
+  mutate(GENDER = 
+         case_when(SEX == 1 ~ "Male",
+                   SEX == 2 ~ "Female"))
+
+
+LNS <- LNS %>% 
+  mutate(BIRTH_PLACE =
+           case_when(BORNUS == 1 ~ "U.S. Born",
+                     BORNUS == 2 ~ "U.S. Born",
+                     BORNUS == 3 ~ "Foreign Born"))
+         
+      
+
+ggplot(LNS, aes(x=AGE, y=YEARS_RES, colour = GENDER)) +
+  geom_point(size=2) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
+
+ggplot(LNS, aes(x=AGE, y=YEARS_RES, colour = BIRTH_PLACE)) +
+  geom_point(size=3) + 
+  geom_jitter() +
+  geom_smooth(method=lm)
+
+```
+
+# Sources
+
+-   R Studio User guide: <https://docs.posit.co/ide/user/ide/guide/ui/ui-panes.html>
+-   R for Data Science:<https://r4ds.hadley.nz/intro>
